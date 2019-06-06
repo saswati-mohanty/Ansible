@@ -1,0 +1,41 @@
+---
+- name: Demo for SampleApp-Server
+  hosts:
+    - ec2-3-90-7-33.compute-1.amazonaws.com
+  gather_facts: true
+  become: yes
+  become_method: sudo
+  tags: [jenkins]
+
+  tasks:
+    - name: Update the software package repository
+      apt:
+        name: "*"
+        update_cache: yes
+    - name: Install a list of packages
+      apt:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - git
+        - deltarpm
+    - name: Download jenkins repo
+      command: echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list
+    - name: Import Jenkins CI key
+      rpm_key:
+        key: https://pkg.jenkins.io/debian/jenkins.io.key
+        state: present
+    - name: Run the equivalent of "apt-get update" as a separate step
+      apt:
+        update_cache: yes
+    - name: Install Jenkins
+      apt:
+        name: "jenkins"
+        state: present
+    - name: Allow port 8080
+      shell: iptables -I INPUT -p tcp --dport 8080 -m state --state NEW,ESTABLISHED -j ACCEPT
+    - name: Start the server
+      service:
+        name: jenkins
+        state: started
+

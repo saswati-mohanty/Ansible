@@ -1,0 +1,27 @@
+---
+- name: Demo for SampleApp-Server
+  hosts:
+    - ec2-3-90-7-33.compute-1.amazonaws.com
+  gather_facts: true
+  become: yes
+  become_method: sudo
+  tags: [jenkins]
+
+  tasks:
+    - name: Update the software package repository
+      apt:
+        name: "*"
+    - name: Download jenkins repo
+      command: sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+    - name: Import Jenkins CI key
+      rpm_key:
+        key: https://pkg.jenkins.io/debian/jenkins.io.key
+        state: present
+    - name: Install Jenkins
+      apt:
+        name: "jenkins"
+        state: installed
+    - name: Start the server
+      service:
+        name: jenkins
+        state: started
