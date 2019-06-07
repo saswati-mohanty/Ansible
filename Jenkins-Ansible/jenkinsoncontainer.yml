@@ -39,24 +39,3 @@
 - name: Install docker-py
   pip: name=docker-py version=1.9.0
 
-[Unit]
-Description=Jenkins in a Docker container
-Requires=docker.service
-After=docker.service
-
-[Service]
-Restart=always
-ExecStart=/usr/bin/docker start -a jenkins-server
-ExecStop=/usr/bin/docker stop -t 2 jenkins-server
-
-[Install]
-WantedBy=default.target
-
-- name: Copy systemd service script to start and stop the jenkins container
-  copy: src=files/jenkins.service dest=/etc/systemd/system
-
-- name: Reload systemctl
-  shell: systemctl reload-or-restart docker-jenkins
-
-- name: Enable the docker-jenkins service
-  shell: systemctl enable docker-jenkins
